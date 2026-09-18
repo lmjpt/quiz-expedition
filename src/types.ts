@@ -13,7 +13,7 @@ export const LEVEL_INFO: Record<Level, { name: string; emoji: string; hint: stri
   5: { name: '산', emoji: '🏔️', hint: '세 자리 계산, 두 자리 곱셈, 나눗셈 (3~4학년)' },
 }
 
-export type Subject = 'math' | 'science' | 'history' | 'scientist' | 'world' | 'riddle' | 'geo'
+export type Subject = 'math' | 'science' | 'history' | 'scientist' | 'world' | 'riddle' | 'geo' | 'english'
 
 export const SUBJECT_INFO: Record<Subject, { name: string; emoji: string }> = {
   math: { name: '수학', emoji: '🔢' },
@@ -23,6 +23,7 @@ export const SUBJECT_INFO: Record<Subject, { name: string; emoji: string }> = {
   world: { name: '세상 상식', emoji: '🌏' },
   riddle: { name: '넌센스', emoji: '🤪' },
   geo: { name: '지리', emoji: '🗺️' },
+  english: { name: '영어', emoji: '📚' },
 }
 
 interface QuestionBase {

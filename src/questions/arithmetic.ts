@@ -177,6 +177,55 @@ function level5(): Question {
   return typed(5, `${a} + □ = ${c}   □ 는?`, c - a)
 }
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b)
+}
+
+// ── 6단계: 두 자리 × 두 자리, 세 자리 × 한 자리, 나머지 나눗셈, 괄호 혼합 계산, 약수·배수, 네 자리 수 ──
+function level6(): Question {
+  const kind = rand(1, 7)
+  if (kind === 1) {
+    const a = rand(12, 45)
+    const b = rand(11, 25)
+    return typed(6, `${a} × ${b} = ?`, a * b)
+  }
+  if (kind === 2) {
+    const a = rand(120, 480)
+    const b = rand(3, 9)
+    return typed(6, `${a} × ${b} = ?`, a * b)
+  }
+  if (kind === 3) {
+    const b = rand(3, 9)
+    const a = rand(20, 99)
+    if (a % b === 0) return typed(6, `${a} ÷ ${b} = ?`, a / b)
+    return typed(6, `${a} ÷ ${b} 의 나머지는?`, a % b)
+  }
+  if (kind === 4) {
+    const a = rand(5, 30)
+    const b = rand(2, 20)
+    const c = rand(2, 9)
+    return Math.random() < 0.5
+      ? typed(6, `(${a} + ${b}) × ${c} = ?`, (a + b) * c)
+      : typed(6, `${a} × ${c} - ${b} = ?`, a * c - b)
+  }
+  if (kind === 5) {
+    const g = rand(2, 9)
+    const a = g * rand(2, 6)
+    let b = g * rand(2, 6)
+    if (b === a) b += g
+    return typed(6, `${a} 와 ${b} 의 최대공약수는?`, gcd(a, b))
+  }
+  if (kind === 6) {
+    const a = rand(2, 9)
+    let b = rand(2, 9)
+    if (b === a) b = a + 1
+    return typed(6, `${a} 와 ${b} 의 최소공배수는?`, (a * b) / gcd(a, b))
+  }
+  const a = rand(1000, 6000)
+  const b = rand(1000, 3999)
+  return Math.random() < 0.5 ? typed(6, `${a} + ${b} = ?`, a + b) : typed(6, `${a + b} - ${b} = ?`, a)
+}
+
 export function generateMath(level: Level): Question {
   switch (level) {
     case 1:
@@ -189,5 +238,7 @@ export function generateMath(level: Level): Question {
       return level4()
     case 5:
       return level5()
+    case 6:
+      return level6()
   }
 }

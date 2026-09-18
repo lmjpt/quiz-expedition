@@ -145,7 +145,7 @@ function ProfileCard({ profile, onChange }: { profile: Profile; onChange: (patch
 
       <div>
         <p className="mb-2 text-sm font-bold text-muted">문제 단계</p>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-6 gap-1.5">
           {LEVELS.map((lv) => {
             const info = LEVEL_INFO[lv]
             const on = profile.level === lv

@@ -119,5 +119,5 @@ export function setMuted(muted: boolean): void {
 }
 
 export function isLevel(n: number): n is Level {
-  return n === 1 || n === 2 || n === 3 || n === 4 || n === 5
+  return n === 1 || n === 2 || n === 3 || n === 4 || n === 5 || n === 6
 }

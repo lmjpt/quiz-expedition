@@ -1,0 +1,204 @@
+@import 'tailwindcss';
+
+/*
+  아이가 PC 앞에 둘이 앉아서 씁니다. 글자와 버튼은 크게, 색은 부드럽게.
+  틀렸을 때 빨간색을 쓰지 않습니다 — 화면이 혼내는 느낌이면 아이가 문제 앞에서 얼어요.
+*/
+@theme {
+  --color-cream: #fdf6ec;
+  --color-ink: #3a332c;
+  --color-muted: #8d8177;
+  --color-line: #efe5d7;
+  --color-brand: #e8795a;
+  --color-brand-soft: #fbe6de;
+  --color-praise: #c98f2c;
+  --color-praise-soft: #faf0d8;
+
+  /* 화면 전체: 굵고 둥근 Jua. 손글씨 글꼴(Gaegu)을 써 봤는데 획이 가늘어 6살이 읽기 어려웠습니다 */
+  --font-sans: 'Jua', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  --font-display: 'Jua', 'Malgun Gothic', sans-serif;
+}
+
+@utility font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    background-color: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    /* Jua 는 굵기가 하나라 bold 를 걸어도 변화가 없습니다. 크기로 강조하세요 */
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+
+  button {
+    cursor: pointer;
+    font: inherit;
+  }
+
+  input {
+    font: inherit;
+  }
+}
+
+/* 말이 한 칸씩 옮겨갈 때 */
+.token {
+  transition:
+    left 0.28s ease-out,
+    top 0.28s ease-out;
+}
+
+/* 사다리·미끄럼틀·보너스로 여러 칸을 한 번에 갈 때 — 천천히 */
+.token-glide {
+  transition:
+    left 1s cubic-bezier(0.4, 0, 0.2, 1),
+    top 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 한 칸 갈 때마다 콩 뛰기 */
+@keyframes hop {
+  0% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(-16px) scale(1.15); }
+  100% { transform: translateY(0) scale(1); }
+}
+.hop {
+  animation: hop 0.3s ease-out;
+}
+
+/* 날아갈 때 커지면서 살짝 기울기 */
+@keyframes fly {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.6) rotate(-10deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.fly {
+  animation: fly 1s ease-in-out;
+}
+
+/* 3D 주사위 */
+.dice-scene {
+  --size: 88px;
+  --half: 44px;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  perspective: 520px;
+}
+.cube {
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  transform-style: preserve-3d;
+  /* 굴릴 때 여기 각도가 크게 바뀌어서 여러 바퀴 도는 것처럼 보입니다 */
+  transition: transform 1.05s cubic-bezier(0.18, 0.85, 0.25, 1);
+}
+.face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 3px;
+  padding: 11px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #fffdf8, #f3ead9);
+  border: 2px solid #d9cbb0;
+  box-shadow: inset 0 0 14px rgba(120, 90, 40, 0.12);
+  backface-visibility: hidden;
+}
+.pip {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 16px;
+  max-height: 16px;
+  margin: auto;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #5a5048, #2c2620);
+}
+.pip-one {
+  max-width: 22px;
+  max-height: 22px;
+  background: radial-gradient(circle at 35% 35%, #f09a7e, #d95b3b);
+}
+.dice-shadow {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -14px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(60, 40, 10, 0.22);
+  filter: blur(3px);
+}
+
+/* 굴릴 때: 튀어 올랐다가 착지, 그림자는 반대로 작아졌다 커짐 */
+@keyframes dice-bounce {
+  0% { transform: translateY(0); }
+  28% { transform: translateY(-54px) scale(1.06); }
+  58% { transform: translateY(0) scale(0.98); }
+  74% { transform: translateY(-16px); }
+  88% { transform: translateY(0) scale(1.01); }
+  100% { transform: translateY(0); }
+}
+.dice-bounce {
+  animation: dice-bounce 1.05s ease-out;
+}
+@keyframes dice-shadow-bounce {
+  0% { transform: scale(1); opacity: 1; }
+  28% { transform: scale(0.55); opacity: 0.4; }
+  58% { transform: scale(1.05); opacity: 1; }
+  74% { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.dice-shadow-bounce {
+  animation: dice-shadow-bounce 1.05s ease-out;
+}
+
+/* 톡 튀어나오는 알림 */
+@keyframes pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop {
+  animation: pop 0.3s ease-out;
+}
+
+/* 도착 축하 */
+@keyframes fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.8; }
+}
+.confetti {
+  position: fixed;
+  top: 0;
+  font-size: 2rem;
+  animation: fall linear forwards;
+  pointer-events: none;
+}
+
+/* 목적지가 반짝반짝 */
+@keyframes twinkle {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 220, 120, 0)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 12px rgba(255, 220, 120, 0.9)); }
+}
+.twinkle {
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+
+/* 지금 차례인 사람 */
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 121, 90, 0.5); }
+  50% { box-shadow: 0 0 0 10px rgba(232, 121, 90, 0); }
+}
+.breathe {
+  animation: breathe 1.6s ease-in-out infinite;
+}

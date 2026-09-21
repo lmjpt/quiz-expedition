@@ -27,6 +27,8 @@ interface Props {
 const STEP_MS = 320
 /** 주사위가 튀어 오르고 도는 시간. index.css 의 dice-bounce, .cube transition 과 맞춰야 합니다 */
 const ROLL_MS = 1100
+/** 말이 멈춘 뒤 문제 창이 열리기까지 쉬는 시간. 어디에 섰는지 보라고 두는 틈 */
+const LAND_PAUSE_MS = 1500
 const BOT_THINK_MS = 1800
 const BOT_READ_MS = 2400
 
@@ -37,6 +39,8 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
   const displayRef = useRef(displayPos)
   displayRef.current = displayPos
   const [glide, setGlide] = useState(false)
+  /** 말판 위에 잠깐 뜨는 안내. "새봄, 12번 칸 도착!" — 문제 창이 열리면 사라집니다 */
+  const [announce, setAnnounce] = useState<string | null>(null)
   const [dice, setDice] = useState<number | null>(null)
   const [rollCount, setRollCount] = useState(0)
   const [rolling, setRolling] = useState(false)
@@ -66,14 +70,22 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
     }, ROLL_MS)
   }, [phase.kind, rolling])
 
-  // 규칙이 문제를 달라고 하면 그 사람 수준의 문제를 골라 넘겨 줍니다
+  // 규칙이 문제를 달라고 하면 그 사람 수준의 문제를 골라 넘겨 줍니다.
+  // 바로 열지 않고 잠깐 쉽니다 — 말이 어디에 섰는지 볼 시간을 주기 위해서입니다.
+  //   첫 차례: 짧게 / 보너스 문제(퀴즈 칸 도착): 한 템포 / 다음 사람 차례: 한 템포,
+  //   사다리·보너스로 날아간 직후면 날아가는 1초까지 기다립니다.
   useEffect(() => {
     if (phase.kind !== 'needQuestion') return
+    const delay =
+      state.turn === 1 && phase.stage === 'turn' ? 600 : phase.stage === 'tile' ? LAND_PAUSE_MS : glide ? LAND_PAUSE_MS + 1000 : LAND_PAUSE_MS
     const t = setTimeout(() => {
+      setAnnounce(null)
       dispatch({ type: 'ask', question: pickQuestion(me.level, recentIds(me.profileId)) })
-    }, phase.stage === 'turn' ? 400 : STEP_MS)
+    }, delay)
     return () => clearTimeout(t)
-  }, [phase, me.level, me.profileId])
+    // glide 는 시작 시점 값만 쓰면 됩니다. 도중에 바뀌어도 기다리는 시간을 다시 재지 않습니다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, me.level, me.profileId, state.turn])
 
   // 말이 한 칸씩 뛰어가고, 다 가면 칸을 확인합니다
   useEffect(() => {
@@ -89,6 +101,7 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
       setDisplayPos((prev) => prev.map((p, i) => (i === idx ? pos : p)))
       if (pos >= to) {
         clearInterval(stepTimer)
+        setAnnounce(`${state.players[idx].emoji} ${state.players[idx].name}, ${to}번 칸 도착!`)
         landTimer = setTimeout(() => {
           if (!cancelled) dispatch({ type: 'land' })
         }, STEP_MS)
@@ -99,6 +112,7 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
       clearInterval(stepTimer)
       if (landTimer) clearTimeout(landTimer)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, current])
 
   // 사다리·보너스 등으로 자리가 바뀌면 화면 위치도 따라갑니다.
@@ -115,6 +129,12 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
     if (movedCount > 1) sfx.swap()
     else if (movedUp) sfx.rise()
     else sfx.fall()
+    setAnnounce(
+      state.players
+        .filter((p, i) => p.pos !== prev[i])
+        .map((p) => `${p.emoji} ${p.name}, ${p.pos}번 칸으로!`)
+        .join('  '),
+    )
     setGlide(true)
     const t = setTimeout(() => setGlide(false), 1000)
     return () => clearTimeout(t)
@@ -241,7 +261,16 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        <Board board={board} players={state.players} displayPos={displayPos} current={current} glide={glide} />
+        <div className="relative">
+          <Board board={board} players={state.players} displayPos={displayPos} current={current} glide={glide} />
+          {announce && (
+            <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
+              <span className="pop font-display rounded-full border-2 border-white bg-ink/85 px-5 py-2 text-xl text-white shadow-lg">
+                {announce}
+              </span>
+            </div>
+          )}
+        </div>
 
         <aside className="flex flex-col gap-4">
           {state.players.map((p, i) => (

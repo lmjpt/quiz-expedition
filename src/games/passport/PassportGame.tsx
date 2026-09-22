@@ -1,14 +1,14 @@
 // 세계 여행 여권 놀이.
 //
-//   지도에서 나라를 고른다 → ✈️ 날아간다 → 그 나라 문제 2개 + 내 단계 상식 1개
+//   지도에서 나라를 고른다 → ✈️ 날아간다 → 그 나라 문제 3개 (단계에 맞게 6개 중에서 섞어 뽑음)
 //   → 3개 중 2개 맞히면 도장 → (둘이면) 다음 아이 차례 → 다시 지도
 //
 // 이기고 지는 게 없습니다. 도장은 기기에 남아서 판이 끝나도 여권에 쌓입니다.
 
 import { useEffect, useState } from 'react'
 import type { Profile, Question } from '../../types'
-import { addStamp, recentIds, recordAnswer, stamps } from '../../game/storage'
-import { pickKnowledge, withShuffledChoices } from '../../questions/pick'
+import { addStamp, stamps } from '../../game/storage'
+import { withShuffledChoices } from '../../questions/pick'
 import QuizModal from '../../components/QuizModal'
 import { sfx } from '../../sound'
 import { speak } from '../../speech'
@@ -31,6 +31,15 @@ type Phase =
   | { kind: 'stamp'; country: Country; correct: number; stamped: boolean; alreadyHad: boolean; fact: string }
 
 const FLY_MS = 1600
+
+function shuffle<T>(items: readonly T[]): T[] {
+  const out = [...items]
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
 /** 도장을 받으려면 세 문제 중 몇 개를 맞혀야 하나 */
 const NEED_CORRECT = 2
 
@@ -65,14 +74,13 @@ export default function PassportGame({ profiles, onHome }: Props) {
     setPlaneAt(country.id)
   }
 
-  // 도착하면 문제를 준비합니다. 낮은 단계는 쉬운 것+보통, 높은 단계는 보통+수도. 가운데에 내 단계 상식 하나
+  // 도착하면 그 나라 문제를 준비합니다. 낮은 단계(새싹·나무)는 쉬움+보통에서, 높은 단계는 보통+어려움에서 3개
   useEffect(() => {
     if (phase.kind !== 'flying' || !me) return
     const country = phase.to
     const t = setTimeout(() => {
-      const [easy, mid, capital] = country.quiz
-      const own = me.level <= 2 ? [easy, mid] : [mid, capital]
-      const questions: Question[] = [withShuffledChoices(own[0]), pickKnowledge(me.level, recentIds(me.id)), withShuffledChoices(own[1])]
+      const pool = me.level <= 2 ? [...country.quiz.easy, ...country.quiz.mid] : [...country.quiz.mid, ...country.quiz.hard]
+      const questions: Question[] = shuffle(pool).slice(0, 3).map(withShuffledChoices)
       sfx.pop()
       speak(`${country.name} 도착! 문제를 풀어 봐요`)
       setPhase({ kind: 'quiz', country, questions, index: 0, results: [], showResult: false })
@@ -82,8 +90,6 @@ export default function PassportGame({ profiles, onHome }: Props) {
 
   function answer(correct: boolean) {
     if (phase.kind !== 'quiz' || phase.showResult || !me) return
-    const q = phase.questions[phase.index]
-    if (!q.id.startsWith('passport:')) recordAnswer(me.id, q.id, correct)
     if (correct) sfx.correct()
     else sfx.wrong()
     setPhase({ ...phase, results: [...phase.results, correct], showResult: true })

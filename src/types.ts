@@ -8,7 +8,7 @@ export type Level = 1 | 2 | 3 | 4 | 5
 export const LEVELS: readonly Level[] = [1, 2, 3, 4, 5]
 
 export const LEVEL_INFO: Record<Level, { name: string; emoji: string; hint: string }> = {
-  1: { name: '새싹', emoji: '🌿', hint: '20까지 더하기 빼기, 10 만들기 (6~7살)' },
+  1: { name: '새싹', emoji: '🌿', hint: '20까지 더하기 빼기, 20 만들기 (6~7살)' },
   2: { name: '나무', emoji: '🌳', hint: '두 자리 계산, 구구단 2~5단 (1~2학년)' },
   3: { name: '숲', emoji: '🌲', hint: '구구단 전체, 세 수 계산 (2~3학년)' },
   4: { name: '산', emoji: '🏔️', hint: '세 자리 계산, 두 자리 곱셈, 나눗셈 (3~4학년)' },

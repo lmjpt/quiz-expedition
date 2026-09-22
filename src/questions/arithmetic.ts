@@ -26,8 +26,9 @@ function typed(level: Level, prompt: string, answer: number, visual?: string): N
   return { id: nextId(), kind: 'number', level, subject: 'math', prompt, answer, visual }
 }
 
-// ── 1단계(새싹): 20 안의 더하기 빼기 (받아올림·받아내림 포함), 10 만들기 ───────
+// ── 1단계(새싹): 20 안의 더하기 빼기 (받아올림·받아내림 포함), 20 만들기 ───────
 // 넷 중 하나는 그림을 함께 보여 줘서 손가락 대신 그림을 세며 풀 수 있게 합니다.
+// "□ 만들기" 는 주로 20 이고 10 은 넷에 한 번쯤 — 10 만들기는 너무 쉽다는 말을 들었습니다.
 function level1(): Question {
   const kind = rand(1, 4)
   if (kind === 1) {
@@ -41,8 +42,9 @@ function level1(): Question {
     return typed(1, `${a} - ${b} = ?`, a - b)
   }
   if (kind === 3) {
-    const a = rand(1, 9)
-    return typed(1, `${a} + □ = 10   □ 는?`, 10 - a)
+    const target = Math.random() < 0.75 ? 20 : 10
+    const a = rand(1, target - 1)
+    return typed(1, `${a} + □ = ${target}   □ 는?`, target - a)
   }
   const emoji = pick(COUNT_EMOJIS)
   const a = rand(2, 6)

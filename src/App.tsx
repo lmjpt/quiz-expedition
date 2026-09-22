@@ -16,8 +16,15 @@ import {
 import Start from './screens/Start'
 import Play from './screens/Play'
 import Finish from './screens/Finish'
+import Hub from './screens/Hub'
+import PassportGame from './games/passport/PassportGame'
 
 type Screen =
+  /** 놀이 고르기 */
+  | { kind: 'hub' }
+  /** 세계 여행 여권 */
+  | { kind: 'passport' }
+  /** 말판 모험 시작 화면 */
   | { kind: 'start' }
   /** first: 먼저 시작하는 사람의 index. null 이면 주사위로 정합니다 */
   | { kind: 'play'; players: PlayerState[]; first: number | null; key: number }
@@ -40,7 +47,7 @@ function toPlayer(p: Profile, colorIndex: number): PlayerState {
 
 export default function App() {
   const [profiles, setProfiles] = useState<Profile[]>(() => load().profiles)
-  const [screen, setScreen] = useState<Screen>({ kind: 'start' })
+  const [screen, setScreen] = useState<Screen>({ kind: 'hub' })
   // 말판은 판마다 돌려 씁니다. 시작 화면에서 바꿀 수도 있습니다
   const [boardId, setBoardId] = useState<BoardId>(() => nextBoardId(lastBoard()))
   // 순서: 주사위로 정하기 / 번갈아. 번갈아면 지난 판에 먼저 한 아이의 반대편
@@ -104,10 +111,15 @@ export default function App() {
   }
 
   switch (screen.kind) {
+    case 'hub':
+      return <Hub onBoard={() => setScreen({ kind: 'start' })} onPassport={() => setScreen({ kind: 'passport' })} />
+    case 'passport':
+      return <PassportGame profiles={profiles} onHome={() => setScreen({ kind: 'hub' })} />
     case 'start':
       return (
         <Start
           profiles={profiles}
+          onBack={() => setScreen({ kind: 'hub' })}
           boardId={boardId}
           onChangeBoard={setBoardId}
           orderMode={orderMode}

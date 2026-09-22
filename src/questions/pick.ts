@@ -42,6 +42,21 @@ export function pickQuestion(level: Level, recentIds: readonly string[]): Questi
   return q.kind === 'choice' ? shuffleChoices(q) : q
 }
 
+/** 연산 없이 상식 문제만 하나. 여권 놀이처럼 산수가 어울리지 않는 곳에서 씁니다 */
+export function pickKnowledge(level: Level, recentIds: readonly string[]): Question {
+  const pool = KNOWLEDGE.filter((q) => q.level === level)
+  if (pool.length === 0) return generateMath(level)
+  const recent = new Set(recentIds)
+  const fresh = pool.filter((q) => !recent.has(q.id))
+  const from = fresh.length > 0 ? fresh : pool
+  return shuffleChoices(from[Math.floor(Math.random() * from.length)])
+}
+
+/** 보기를 섞어서 냅니다. 은행에는 정답이 0번에 있습니다 */
+export function withShuffledChoices(q: ChoiceQuestion): ChoiceQuestion {
+  return shuffleChoices(q)
+}
+
 /** 정답을 문장으로. 소리로 읽어 줄 때 씁니다 */
 export function answerText(q: Question): string {
   return q.kind === 'choice' ? q.choices[q.answerIndex] : String(q.answer)

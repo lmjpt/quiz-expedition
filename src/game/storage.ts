@@ -25,6 +25,8 @@ interface Saved {
   lastFirst: string | null
   /** 순서 정하는 방식. dice: 주사위로 / alternate: 번갈아 */
   orderMode: OrderMode
+  /** 세계 여행 여권 도장: 아이 id → 나라 id → 찍은 날(YYYY-MM-DD) */
+  passport: Record<string, Record<string, string>>
 }
 
 export type OrderMode = 'dice' | 'alternate'
@@ -44,6 +46,7 @@ function defaults(): Saved {
     lastBoard: null,
     lastFirst: null,
     orderMode: 'dice',
+    passport: {},
   }
 }
 
@@ -68,6 +71,7 @@ export function load(): Saved {
       lastBoard: isBoardId(s.lastBoard) ? s.lastBoard : null,
       lastFirst: typeof s.lastFirst === 'string' ? s.lastFirst : null,
       orderMode: s.orderMode === 'alternate' ? 'alternate' : 'dice',
+      passport: typeof s.passport === 'object' && s.passport !== null ? s.passport : {},
     }
     return migrate(loaded)
   } catch {
@@ -158,6 +162,22 @@ export function saveOrderMode(mode: OrderMode): void {
 export function saveLastFirst(profileId: string): void {
   const s = load()
   s.lastFirst = profileId
+  save(s)
+}
+
+/** 아이가 받은 도장. 나라 id → 찍은 날 */
+export function stamps(profileId: string): Record<string, string> {
+  return load().passport[profileId] ?? {}
+}
+
+export function addStamp(profileId: string, countryId: string): void {
+  const s = load()
+  const mine = s.passport[profileId] ?? {}
+  if (!mine[countryId]) {
+    const d = new Date()
+    mine[countryId] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+  s.passport[profileId] = mine
   save(s)
 }
 

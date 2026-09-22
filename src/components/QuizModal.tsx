@@ -8,23 +8,29 @@ import type { PlayerState, QuizStage } from '../game/engine'
 import { answerText } from '../questions/pick'
 import { speak } from '../speech'
 
+/** 말판 놀이의 차례 문제 / 보너스 문제, 여권 놀이의 여행 문제 */
+export type ModalStage = QuizStage | 'trip'
+
 interface Props {
   question: Question
-  /** 차례 문제(맞히면 주사위 +2)인지 퀴즈 칸 보너스 문제(맞히면 2칸 더)인지 */
-  stage: QuizStage
-  player: PlayerState
+  /** 차례 문제(맞히면 주사위)인지 퀴즈 칸 보너스 문제(맞히면 2칸 더)인지 여행 문제인지 */
+  stage: ModalStage
+  player: Pick<PlayerState, 'name' | 'emoji' | 'isBot'>
+  /** 여행 문제에서 "1/3" 처럼 진행을 보여 줄 때 */
+  progress?: string
   result: { correct: boolean } | null
   onAnswer: (correct: boolean) => void
   onContinue: () => void
 }
 
-export default function QuizModal({ question, stage, player, result, onAnswer, onContinue }: Props) {
+export default function QuizModal({ question, stage, player, progress, result, onAnswer, onContinue }: Props) {
   const subject = SUBJECT_INFO[question.subject]
 
   return (
     <div className="fixed inset-0 z-20 flex items-center justify-center bg-ink/40 p-4">
       <div className={`pop w-full max-w-2xl rounded-3xl bg-white p-8 shadow-2xl ${stage === 'tile' ? 'ring-8 ring-praise/60' : ''}`}>
         {stage === 'tile' && <p className="-mt-2 mb-2 text-center text-xl font-black text-praise">🎁 보너스 문제!</p>}
+        {stage === 'trip' && progress && <p className="font-display -mt-2 mb-2 text-center text-xl text-muted">✈️ 여행 문제 {progress}</p>}
         <div className="mb-4 flex items-center justify-between">
           <span className="rounded-full bg-cream px-4 py-1 text-lg font-bold text-muted">
             {subject.emoji} {subject.name}
@@ -162,7 +168,7 @@ function Result({
   onContinue,
 }: {
   question: Question
-  stage: QuizStage
+  stage: ModalStage
   correct: boolean
   isBot: boolean
   onContinue: () => void
@@ -174,13 +180,14 @@ function Result({
         <>
           <p className="text-6xl">🎉</p>
           <p className="text-3xl font-black text-praise">{who} 딩동댕! 맞았어요</p>
-          <p className="text-xl text-muted">{stage === 'turn' ? '🎲 주사위를 굴려요!' : '2칸 더 가요!'}</p>
+          <p className="text-xl text-muted">{stage === 'turn' ? '🎲 주사위를 굴려요!' : stage === 'tile' ? '2칸 더 가요!' : '✈️ 여행 계속!'}</p>
         </>
       ) : (
         <>
           <p className="text-6xl">🤔</p>
           <p className="text-3xl font-black">{who} 아쉬워요, 다음엔 맞힐 거예요</p>
           {stage === 'turn' && <p className="text-lg text-muted">이번엔 주사위를 쉬고 다음 차례에 다시!</p>}
+          {stage === 'trip' && <p className="text-lg text-muted">괜찮아요, 다음 문제로!</p>}
           <p className="text-2xl">
             정답은 <span className="rounded-xl bg-praise-soft px-3 py-1 font-black">{answerText(question)}</span>
           </p>

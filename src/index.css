@@ -185,6 +185,31 @@
   pointer-events: none;
 }
 
+/* 여권 놀이: 비행기 이동과 도장 찍기 */
+.plane {
+  transition:
+    left 0.3s,
+    top 0.3s;
+}
+.plane-fly {
+  transition:
+    left 1.6s cubic-bezier(0.45, 0, 0.3, 1),
+    top 1.6s cubic-bezier(0.45, 0, 0.3, 1);
+  animation: plane-bob 0.8s ease-in-out infinite;
+}
+@keyframes plane-bob {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -6px; }
+}
+@keyframes stamp-in {
+  0% { transform: scale(2.2) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(0.95) rotate(-6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-3deg); opacity: 1; }
+}
+.stamp-in {
+  animation: stamp-in 0.5s ease-out both;
+}
+
 /* 목적지가 반짝반짝 */
 @keyframes twinkle {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 220, 120, 0)); }

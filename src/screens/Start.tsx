@@ -9,6 +9,7 @@ import type { OrderMode } from '../game/storage'
 
 interface Props {
   profiles: Profile[]
+  onBack: () => void
   boardId: BoardId
   onChangeBoard: (id: BoardId) => void
   orderMode: OrderMode
@@ -23,6 +24,7 @@ interface Props {
 
 export default function Start({
   profiles,
+  onBack,
   boardId,
   onChangeBoard,
   orderMode,
@@ -43,8 +45,11 @@ export default function Start({
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 px-6 py-10">
+      <button type="button" onClick={onBack} className="self-start rounded-xl px-3 py-2 text-lg text-muted hover:bg-white">
+        ← 놀이 고르기
+      </button>
       <header className="text-center">
-        <h1 className="font-display text-6xl tracking-tight">🧭 퀴즈 탐험대</h1>
+        <h1 className="font-display text-6xl tracking-tight">🎲 말판 모험</h1>
         <p className="mt-2 text-lg text-muted">문제를 풀고 주사위를 굴려 목적지까지 모험을 떠나요!</p>
       </header>
 

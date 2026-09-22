@@ -1,6 +1,6 @@
 // 다음 문제를 고르는 규칙.
 //
-// - 연산 문제와 상식 문제를 반반 섞습니다.
+// - 연산 문제는 열에 셋. 처음엔 반반이었는데 산수가 너무 자주 나온다는 말을 들었습니다.
 // - 상식 문제는 최근에 나온 것을 피합니다. 다 나왔으면 처음부터 다시 돕니다.
 // - 보기 순서는 매번 섞습니다 (은행에는 정답이 0번에 있어도 됩니다).
 
@@ -26,8 +26,11 @@ function shuffleChoices(q: ChoiceQuestion): ChoiceQuestion {
   }
 }
 
+/** 연산 문제가 나오는 비율 */
+export const MATH_SHARE = 0.3
+
 export function pickQuestion(level: Level, recentIds: readonly string[]): Question {
-  if (Math.random() < 0.5) return generateMath(level)
+  if (Math.random() < MATH_SHARE) return generateMath(level)
 
   const pool = KNOWLEDGE.filter((q) => q.level === level)
   if (pool.length === 0) return generateMath(level)

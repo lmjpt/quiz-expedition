@@ -17,6 +17,5 @@ import { LEVEL2 } from './bank/level2'
 import { LEVEL3 } from './bank/level3'
 import { LEVEL4 } from './bank/level4'
 import { LEVEL5 } from './bank/level5'
-import { LEVEL6 } from './bank/level6'
 
-export const KNOWLEDGE: readonly ChoiceQuestion[] = [...LEVEL1, ...LEVEL2, ...LEVEL3, ...LEVEL4, ...LEVEL5, ...LEVEL6]
+export const KNOWLEDGE: readonly ChoiceQuestion[] = [...LEVEL1, ...LEVEL2, ...LEVEL3, ...LEVEL4, ...LEVEL5]

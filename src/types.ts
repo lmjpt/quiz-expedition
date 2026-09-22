@@ -1,17 +1,18 @@
 // 게임 전체가 함께 쓰는 타입.
 
 /** 문제 난이도. 아이마다 하나씩 고릅니다. 나이가 아니라 '지금 풀 수 있는 것' 기준입니다. */
-export type Level = 1 | 2 | 3 | 4 | 5 | 6
+// 처음엔 '씨앗'(그림 세기) 단계가 1이었는데 6살에게도 너무 쉬워서 뺐습니다.
+// 그래서 지금 1단계가 옛 2단계입니다. 저장된 옛 단계 번호는 storage.ts 가 옮겨 줍니다.
+export type Level = 1 | 2 | 3 | 4 | 5
 
-export const LEVELS: readonly Level[] = [1, 2, 3, 4, 5, 6]
+export const LEVELS: readonly Level[] = [1, 2, 3, 4, 5]
 
 export const LEVEL_INFO: Record<Level, { name: string; emoji: string; hint: string }> = {
-  1: { name: '씨앗', emoji: '🌱', hint: '한 자리 더하기 빼기, 그림 상식 (5~6살)' },
-  2: { name: '새싹', emoji: '🌿', hint: '20까지 더하기 빼기, 10 만들기 (6~7살)' },
-  3: { name: '나무', emoji: '🌳', hint: '두 자리 계산, 구구단 2~5단 (1~2학년)' },
-  4: { name: '숲', emoji: '🌲', hint: '구구단 전체, 세 수 계산 (2~3학년)' },
-  5: { name: '산', emoji: '🏔️', hint: '세 자리 계산, 두 자리 곱셈, 나눗셈 (3~4학년)' },
-  6: { name: '별', emoji: '⭐', hint: '두 자리끼리 곱셈, 나머지, 괄호 계산, 약수·배수 (4~5학년)' },
+  1: { name: '새싹', emoji: '🌿', hint: '20까지 더하기 빼기, 10 만들기 (6~7살)' },
+  2: { name: '나무', emoji: '🌳', hint: '두 자리 계산, 구구단 2~5단 (1~2학년)' },
+  3: { name: '숲', emoji: '🌲', hint: '구구단 전체, 세 수 계산 (2~3학년)' },
+  4: { name: '산', emoji: '🏔️', hint: '세 자리 계산, 두 자리 곱셈, 나눗셈 (3~4학년)' },
+  5: { name: '별', emoji: '⭐', hint: '두 자리끼리 곱셈, 나머지, 괄호 계산, 약수·배수 (4~5학년)' },
 }
 
 export type Subject = 'math' | 'science' | 'history' | 'scientist' | 'world' | 'riddle' | 'geo' | 'english'

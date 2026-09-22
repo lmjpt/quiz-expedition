@@ -10,8 +10,11 @@ import type { BoardId } from './board'
 
 const KEY = 'quiz-board:v1'
 const RECENT_LIMIT = 60
+/** 저장 형식 버전. 2: 씨앗 단계를 빼서 단계 번호가 하나씩 내려감 */
+const VERSION = 2
 
 interface Saved {
+  version: number
   profiles: Profile[]
   recent: Record<string, string[]>
   missed: Record<string, string[]>
@@ -24,9 +27,10 @@ export const EMOJIS = ['🐰', '🐣', '🐻', '🐼', '🦊', '🐨', '🐯', '
 
 function defaults(): Saved {
   return {
+    version: VERSION,
     profiles: [
-      { id: 'p1', name: '첫째', emoji: '🐰', level: 3, games: 0, wins: 0 },
-      { id: 'p2', name: '둘째', emoji: '🐣', level: 2, games: 0, wins: 0 },
+      { id: 'p1', name: '첫째', emoji: '🐰', level: 2, games: 0, wins: 0 },
+      { id: 'p2', name: '둘째', emoji: '🐣', level: 1, games: 0, wins: 0 },
     ],
     recent: {},
     missed: {},
@@ -47,16 +51,38 @@ export function load(): Saved {
     if (typeof parsed !== 'object' || parsed === null) return defaults()
     const d = defaults()
     const s = parsed as Partial<Saved>
-    return {
+    const loaded: Saved = {
+      version: typeof s.version === 'number' ? s.version : 1,
       profiles: Array.isArray(s.profiles) && s.profiles.length > 0 ? s.profiles : d.profiles,
       recent: s.recent ?? {},
       missed: s.missed ?? {},
       muted: s.muted ?? false,
       lastBoard: isBoardId(s.lastBoard) ? s.lastBoard : null,
     }
+    return migrate(loaded)
   } catch {
     return defaults()
   }
+}
+
+/** 옛 저장 형식을 지금 형식으로. 한 번 옮기면 저장해서 다시 하지 않습니다 */
+function migrate(s: Saved): Saved {
+  if (s.version >= VERSION) return s
+  // v1 → v2: 씨앗(1) 을 빼서 단계가 하나씩 내려감. 씨앗이던 아이는 새싹(1) 으로.
+  // 문제 id 에 단계 번호가 들어 있어서 '최근 나온 문제' 기록은 비웁니다 (한 판만 겹칠 수 있음).
+  const next: Saved = {
+    ...s,
+    version: VERSION,
+    profiles: s.profiles.map((p) => ({ ...p, level: clampLevel(p.level - 1) })),
+    recent: {},
+    missed: {},
+  }
+  save(next)
+  return next
+}
+
+function clampLevel(n: number): Level {
+  return isLevel(n) ? n : n < 1 ? 1 : 5
 }
 
 function save(s: Saved): void {
@@ -119,5 +145,5 @@ export function setMuted(muted: boolean): void {
 }
 
 export function isLevel(n: number): n is Level {
-  return n === 1 || n === 2 || n === 3 || n === 4 || n === 5 || n === 6
+  return n === 1 || n === 2 || n === 3 || n === 4 || n === 5
 }

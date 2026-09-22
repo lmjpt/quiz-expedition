@@ -23,7 +23,7 @@ const H = 540
 type View = { x: number; y: number; w: number; h: number }
 const FULL: View = { x: 0, y: 0, w: W, h: H }
 /** 유럽 확대 영역. 가로세로 비율은 전체 지도(1000:540)와 같아야 찌그러지지 않습니다 */
-const EUROPE: View = { x: 400, y: 30, w: 320, h: 172.8 }
+const EUROPE: View = { x: 400, y: 40, w: 320, h: 172.8 }
 
 /** 대륙 모양. 정확하지 않아도 됩니다 — 아이가 "여기가 아프리카" 하고 알아볼 정도면 충분 */
 const LAND: { id: string; d: string }[] = [

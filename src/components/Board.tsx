@@ -5,7 +5,7 @@
 // 격자 상자는 그리지 않습니다. 칸은 길 위에 놓인 둥근 돌이고, 특수 칸만 크게 세웁니다.
 
 import { COLS, ROWS, TILE_BG, TILE_NAME, tileCenter, tileGrid, type BoardDef, type Tile } from '../game/board'
-import { PLAYER_COLORS, type PlayerState } from '../game/engine'
+import type { PlayerState } from '../game/engine'
 import { Connectors, Progress, Road } from './BoardPath'
 
 interface Props {
@@ -28,7 +28,7 @@ export default function Board({ board, players, displayPos, current, glide }: Pr
     >
       <Scenery decor={theme.decor} />
       <Road board={board} />
-      <Progress board={board} positions={displayPos} />
+      <Progress board={board} positions={displayPos} colors={players.map((p) => p.color)} />
 
       {/* 칸 */}
       <div
@@ -51,7 +51,7 @@ export default function Board({ board, players, displayPos, current, glide }: Pr
       {players.map((p, i) => {
         const c = tileCenter(displayPos[i])
         const offset = i === 0 ? -16 : 16
-        const color = PLAYER_COLORS[i % PLAYER_COLORS.length]
+        const color = p.color
         return (
           <div
             key={p.profileId}

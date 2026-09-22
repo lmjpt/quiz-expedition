@@ -5,24 +5,41 @@ import type { Profile } from '../types'
 import { LEVELS, LEVEL_INFO } from '../types'
 import { EMOJIS } from '../game/storage'
 import { BOARDS, type BoardId } from '../game/board'
+import type { OrderMode } from '../game/storage'
 
 interface Props {
   profiles: Profile[]
   boardId: BoardId
   onChangeBoard: (id: BoardId) => void
+  orderMode: OrderMode
+  onChangeOrderMode: (mode: OrderMode) => void
+  /** 번갈아 모드에서 이번 판에 먼저 시작하는 아이 */
+  firstId: string
+  onSwapFirst: () => void
   onChangeProfiles: (next: Profile[]) => void
   onStartSolo: (p: Profile) => void
-  onStartDuo: (a: Profile, b: Profile) => void
+  onStartDuo: () => void
 }
 
-export default function Start({ profiles, boardId, onChangeBoard, onChangeProfiles, onStartSolo, onStartDuo }: Props) {
+export default function Start({
+  profiles,
+  boardId,
+  onChangeBoard,
+  orderMode,
+  onChangeOrderMode,
+  firstId,
+  onSwapFirst,
+  onChangeProfiles,
+  onStartSolo,
+  onStartDuo,
+}: Props) {
   const [soloPick, setSoloPick] = useState<string | null>(null)
 
   function update(id: string, patch: Partial<Profile>) {
     onChangeProfiles(profiles.map((p) => (p.id === id ? { ...p, ...patch } : p)))
   }
 
-  const [a, b] = profiles
+  const first = profiles.find((p) => p.id === firstId) ?? profiles[0]
 
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-center gap-8 px-6 py-10">
@@ -61,9 +78,49 @@ export default function Start({ profiles, boardId, onChangeBoard, onChangeProfil
           </div>
         </div>
 
+        <div className="flex w-full max-w-2xl flex-col items-center gap-2 rounded-3xl border border-line bg-white p-4">
+          <p className="font-display text-xl text-muted">누가 먼저 할까요?</p>
+          <div className="grid w-full grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => onChangeOrderMode('dice')}
+              className={`rounded-2xl border-2 px-4 py-3 text-xl font-bold transition active:scale-95 ${
+                orderMode === 'dice' ? 'border-brand bg-brand-soft' : 'border-line bg-cream hover:border-brand'
+              }`}
+            >
+              🎲 주사위로 정하기
+              <span className="block text-sm text-muted">시작할 때 한 번씩 굴려서 높은 눈이 먼저</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onChangeOrderMode('alternate')}
+              className={`rounded-2xl border-2 px-4 py-3 text-xl font-bold transition active:scale-95 ${
+                orderMode === 'alternate' ? 'border-brand bg-brand-soft' : 'border-line bg-cream hover:border-brand'
+              }`}
+            >
+              🔁 번갈아 시작
+              <span className="block text-sm text-muted">지난 판에 먼저 한 사람의 반대편이 먼저</span>
+            </button>
+          </div>
+          {orderMode === 'alternate' && (
+            <div className="flex items-center gap-3 pt-1">
+              <span className="text-lg">
+                이번 판은 <span className="font-display text-2xl">{first.emoji} {first.name}</span> 먼저
+              </span>
+              <button
+                type="button"
+                onClick={onSwapFirst}
+                className="rounded-xl border border-line bg-cream px-3 py-1 text-base font-bold hover:border-brand active:scale-95"
+              >
+                바꾸기
+              </button>
+            </div>
+          )}
+        </div>
+
         <button
           type="button"
-          onClick={() => onStartDuo(a, b)}
+          onClick={onStartDuo}
           className="font-display w-full max-w-md rounded-3xl bg-brand px-8 py-6 text-4xl text-white shadow-lg transition hover:brightness-105 active:scale-95"
         >
           👫 탐험대 출발!

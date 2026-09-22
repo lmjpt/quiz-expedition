@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { GOAL, getBoard, type BoardId } from '../game/board'
-import { PLAYER_COLORS, newGame, reduce, type PlayerState } from '../game/engine'
+import { newGame, reduce, type PlayerState } from '../game/engine'
 import { isMuted, recentIds, recordAnswer, setMuted } from '../game/storage'
 import { answerText, pickQuestion } from '../questions/pick'
 import { setSpeechMuted, speak } from '../speech'
@@ -14,10 +14,15 @@ import Dice from '../components/Dice'
 import QuizModal from '../components/QuizModal'
 import PlayerCard from '../components/PlayerCard'
 import QuitDialog from '../components/QuitDialog'
+import OrderPicker from '../components/OrderPicker'
 
 interface Props {
   boardId: BoardId
   players: PlayerState[]
+  /** 먼저 시작하는 사람. null 이면 주사위로 정하는 화면부터 */
+  first: number | null
+  /** 주사위로 순서가 정해졌을 때 (다음 판 '번갈아' 계산용) */
+  onOrderDecided: (profileId: string) => void
   onFinish: (players: PlayerState[], winner: number) => void
   onQuit: () => void
   /** 판 도중 단계를 바꾸면 프로필에도 남깁니다 */
@@ -32,8 +37,8 @@ const LAND_PAUSE_MS = 1500
 const BOT_THINK_MS = 1800
 const BOT_READ_MS = 2400
 
-export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel }: Props) {
-  const [state, dispatch] = useReducer(reduce, undefined, () => newGame(players, boardId))
+export default function Play({ boardId, players, first, onOrderDecided, onFinish, onQuit, onChangeLevel }: Props) {
+  const [state, dispatch] = useReducer(reduce, undefined, () => newGame(players, boardId, first))
   const board = getBoard(state.boardId)
   const [displayPos, setDisplayPos] = useState(() => players.map((p) => p.pos))
   const displayRef = useRef(displayPos)
@@ -228,6 +233,8 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
       case 'quiz':
       case 'quizResult':
         return `${me.name} 차례`
+      case 'lobby':
+        return '누가 먼저 할까요?'
       case 'finished':
         return `${state.players[phase.winner].name} 도착! 🏆`
       default:
@@ -277,8 +284,8 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
             <PlayerCard
               key={p.profileId}
               player={p}
-              color={PLAYER_COLORS[i % PLAYER_COLORS.length]}
-              active={i === current}
+              color={p.color}
+              active={i === current && phase.kind !== 'lobby'}
               onChangeLevel={(level) => {
                 dispatch({ type: 'setLevel', player: i, level })
                 onChangeLevel(p.profileId, level)
@@ -293,6 +300,16 @@ export default function Play({ boardId, players, onFinish, onQuit, onChangeLevel
           </div>
         </aside>
       </div>
+
+      {phase.kind === 'lobby' && (
+        <OrderPicker
+          players={state.players}
+          onDecided={(idx) => {
+            onOrderDecided(state.players[idx].profileId)
+            dispatch({ type: 'start', first: idx })
+          }}
+        />
+      )}
 
       {(phase.kind === 'quiz' || phase.kind === 'quizResult') && (
         <QuizModal

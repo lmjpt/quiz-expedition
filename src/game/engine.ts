@@ -17,13 +17,16 @@ import { GOAL, QUIZ_BONUS, clampPos, getBoard, type BoardId } from './board'
 /** 매 차례 시작에 나오는 문제인지, 퀴즈 칸에 떨어져 나온 보너스 문제인지 */
 export type QuizStage = 'turn' | 'tile'
 
-/** 첫째 말, 둘째 말 색. 말 테두리와 지나온 길에 씁니다 */
+/** 아이마다 고정되는 말 색. 순서가 바뀌어도 색은 따라가지 않습니다 */
 export const PLAYER_COLORS = ['#e8795a', '#3f9d8a'] as const
+export const BOT_COLOR = '#8b8fa3'
 
 export interface PlayerState {
   profileId: string
   name: string
   emoji: string
+  /** 말 테두리·지나온 길 색 */
+  color: string
   level: Level
   pos: number
   answered: number
@@ -32,6 +35,8 @@ export interface PlayerState {
 }
 
 export type Phase =
+  /** 누가 먼저 할지 정하는 중 (주사위 순서 정하기). 'start' 로 시작합니다 */
+  | { kind: 'lobby' }
   /** 문제가 필요함. 화면이 문제를 골라 'ask' 로 넘겨 줍니다 (규칙은 문제 은행을 모릅니다) */
   | { kind: 'needQuestion'; stage: QuizStage }
   /** 문제를 풀고 있음 */
@@ -55,6 +60,8 @@ export interface GameState {
 }
 
 export type Action =
+  /** 순서가 정해짐. first 가 먼저 시작 */
+  | { type: 'start'; first: number }
   | { type: 'ask'; question: Question }
   | { type: 'roll'; dice: number }
   | { type: 'land' }
@@ -63,8 +70,10 @@ export type Action =
   /** 판 도중에 단계를 바꿈. 다음 문제부터 적용 */
   | { type: 'setLevel'; player: number; level: Level }
 
-export function newGame(players: PlayerState[], boardId: BoardId): GameState {
-  return { boardId, players, current: 0, phase: { kind: 'needQuestion', stage: 'turn' }, turn: 1 }
+/** first 가 null 이면 순서 정하기(lobby)부터 시작합니다 */
+export function newGame(players: PlayerState[], boardId: BoardId, first: number | null): GameState {
+  if (first === null) return { boardId, players, current: 0, phase: { kind: 'lobby' }, turn: 1 }
+  return { boardId, players, current: first, phase: { kind: 'needQuestion', stage: 'turn' }, turn: 1 }
 }
 
 function nextTurn(state: GameState): GameState {
@@ -89,6 +98,11 @@ export function reduce(state: GameState, action: Action): GameState {
   const me = state.players[state.current]
 
   switch (action.type) {
+    case 'start': {
+      if (state.phase.kind !== 'lobby') return state
+      return { ...state, current: action.first, phase: { kind: 'needQuestion', stage: 'turn' } }
+    }
+
     case 'setLevel': {
       const players = state.players.map((p, i) => (i === action.player ? { ...p, level: action.level } : p))
       return { ...state, players }

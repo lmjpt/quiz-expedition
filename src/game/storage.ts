@@ -21,7 +21,13 @@ interface Saved {
   muted: boolean
   /** 마지막으로 놀았던 말판. 다음 판은 그 다음 말판으로 */
   lastBoard: BoardId | null
+  /** 지난 판에 먼저 시작한 아이. '번갈아' 모드에서 다음 판은 반대편이 먼저 */
+  lastFirst: string | null
+  /** 순서 정하는 방식. dice: 주사위로 / alternate: 번갈아 */
+  orderMode: OrderMode
 }
+
+export type OrderMode = 'dice' | 'alternate'
 
 export const EMOJIS = ['🐰', '🐣', '🐻', '🐼', '🦊', '🐨', '🐯', '🐸', '🐧', '🦉', '🐿️', '🐳'] as const
 
@@ -36,6 +42,8 @@ function defaults(): Saved {
     missed: {},
     muted: false,
     lastBoard: null,
+    lastFirst: null,
+    orderMode: 'dice',
   }
 }
 
@@ -58,6 +66,8 @@ export function load(): Saved {
       missed: s.missed ?? {},
       muted: s.muted ?? false,
       lastBoard: isBoardId(s.lastBoard) ? s.lastBoard : null,
+      lastFirst: typeof s.lastFirst === 'string' ? s.lastFirst : null,
+      orderMode: s.orderMode === 'alternate' ? 'alternate' : 'dice',
     }
     return migrate(loaded)
   } catch {
@@ -131,6 +141,23 @@ export function lastBoard(): BoardId | null {
 export function saveLastBoard(id: BoardId): void {
   const s = load()
   s.lastBoard = id
+  save(s)
+}
+
+export function orderSettings(): { lastFirst: string | null; orderMode: OrderMode } {
+  const s = load()
+  return { lastFirst: s.lastFirst, orderMode: s.orderMode }
+}
+
+export function saveOrderMode(mode: OrderMode): void {
+  const s = load()
+  s.orderMode = mode
+  save(s)
+}
+
+export function saveLastFirst(profileId: string): void {
+  const s = load()
+  s.lastFirst = profileId
   save(s)
 }
 

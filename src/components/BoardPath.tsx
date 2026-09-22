@@ -2,7 +2,6 @@
 // 좌표계는 칸 하나가 100 × 100.
 
 import { COLS, ROWS, tileCenter, type BoardDef, type Connector } from '../game/board'
-import { PLAYER_COLORS } from '../game/engine'
 
 export const VW = COLS * 100
 export const VH = ROWS * 100
@@ -45,7 +44,7 @@ export function Road({ board }: { board: BoardDef }) {
 }
 
 /** 각 사람이 지나온 길. 말 색으로 얇게 칠해서 경주 느낌을 냅니다 */
-export function Progress({ board, positions }: { board: BoardDef; positions: number[] }) {
+export function Progress({ board, positions, colors }: { board: BoardDef; positions: number[]; colors: string[] }) {
   return (
     <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="none" aria-hidden>
       {positions.map((pos, i) => {
@@ -58,7 +57,7 @@ export function Progress({ board, positions }: { board: BoardDef; positions: num
             key={i}
             d={smoothPath(shifted)}
             fill="none"
-            stroke={PLAYER_COLORS[i % PLAYER_COLORS.length]}
+            stroke={colors[i]}
             strokeWidth={6}
             strokeLinecap="round"
             strokeLinejoin="round"

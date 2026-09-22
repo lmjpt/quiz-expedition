@@ -149,10 +149,14 @@ export default function Play({ boardId, players, first, onOrderDecided, onFinish
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined
     switch (phase.kind) {
-      case 'quiz':
+      case 'quiz': {
         sfx.pop()
-        speak(phase.stage === 'turn' ? `${me.name}. ${phase.question.prompt}` : `보너스 문제! ${phase.question.prompt}`)
+        // 연산 문제는 읽지 않습니다 — 음성이 "7 플러스 3 등호" 로 읽어서 오히려 헷갈립니다
+        const isMath = phase.question.subject === 'math'
+        const body = isMath ? '' : phase.question.prompt
+        speak(phase.stage === 'turn' ? `${me.name}. ${body}` : `보너스 문제! ${body}`)
         break
+      }
       case 'quizResult': {
         if (phase.correct) sfx.correct()
         else sfx.wrong()

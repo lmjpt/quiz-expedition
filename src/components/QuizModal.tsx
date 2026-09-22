@@ -38,15 +38,19 @@ export default function QuizModal({ question, stage, player, progress, result, o
           <span className="text-2xl font-bold">
             {player.emoji} {player.name}
           </span>
-          <button
-            type="button"
-            onClick={() => speak(question.prompt)}
-            className="rounded-full bg-cream px-3 py-1 text-xl hover:bg-brand-soft"
-            aria-label="다시 읽어 주기"
-            title="다시 읽어 주기"
-          >
-            🔊
-          </button>
+          {question.subject === 'math' ? (
+            <span className="w-11" aria-hidden />
+          ) : (
+            <button
+              type="button"
+              onClick={() => speak(question.prompt)}
+              className="rounded-full bg-cream px-3 py-1 text-xl hover:bg-brand-soft"
+              aria-label="다시 읽어 주기"
+              title="다시 읽어 주기"
+            >
+              🔊
+            </button>
+          )}
         </div>
 
         {question.visual && <p className="mb-3 text-center text-5xl leading-relaxed break-words">{question.visual}</p>}
